@@ -827,7 +827,6 @@
             document.getElementById('v1PriceGroup').style.display = displayStyle;
             document.getElementById('v2PriceGroup').style.display = displayStyle;
             document.getElementById('strategyToggleContainer').style.display = displayStyle;
-            
             saveToStorage();
         }
 
@@ -877,16 +876,14 @@
                 closeSmartPasteModal();
                 return;
             }
-
             document.getElementById(`${activeSmartPastePrefix}CriteriaList`).innerHTML = '';
-
             let lines = rawText.split('\n')
                 .map(l => l.replace(/[\[\]]/g, '').trim())
                 .filter(l => l.length > 0);
 
             for (let i = 0; i < lines.length; i++) {
                 let line = lines[i];
-                if (/^[+-]?\d+$/.test(line)) continue; 
+                if (/^[+-]?\d+$/.test(line)) continue;
 
                 let criteriaName = line;
                 let criteriaType = 'plus';
@@ -900,12 +897,10 @@
                         criteriaType = 'plus';
                     }
                     criteriaWeight = nextLine.replace(/[+-]/g, '');
-                    i++; 
+                    i++;
                 }
-
                 addCriteriaRow(activeSmartPastePrefix, criteriaName, criteriaType, criteriaWeight);
             }
-            
             closeSmartPasteModal();
             updateGlobalMaxWeight();
             saveToStorage();
@@ -914,7 +909,6 @@
         function addCriteriaRow(variantPrefix, name = '', type = 'plus', weight = '') {
             const container = document.getElementById(`${variantPrefix}CriteriaList`);
             const rowId = 'row_' + Date.now() + Math.random().toString(36).substr(2, 5);
-
             const item = document.createElement('div');
             item.className = 'criteria-item';
             item.id = rowId;
@@ -928,11 +922,13 @@
                 <input type="number" placeholder="Вес" class="crit-weight" value="${weight}" min="0">
                 <button class="btn-delete-row" onclick="document.getElementById('${rowId}').remove(); updateGlobalMaxWeight(); saveToStorage();">✕</button>
             `;
-
             container.appendChild(item);
 
             const weightInput = item.querySelector('.crit-weight');
-            weightInput.addEventListener('input', () => { updateGlobalMaxWeight(); saveToStorage(); });
+            weightInput.addEventListener('input', () => {
+                updateGlobalMaxWeight();
+                saveToStorage();
+            });
 
             const nameInput = item.querySelector('.crit-name');
             nameInput.addEventListener('input', saveToStorage);
@@ -946,7 +942,7 @@
                     }, 50);
                 }
             });
-            
+
             updateGlobalMaxWeight();
             saveToStorage();
         }
@@ -955,6 +951,7 @@
             const row = document.getElementById(rowId);
             const btnPlus = row.querySelector('.type-btn.plus');
             const btnMinus = row.querySelector('.type-btn.minus');
+
             if (type === 'plus') {
                 btnPlus.classList.add('active');
                 btnMinus.classList.remove('active');
@@ -969,7 +966,6 @@
             const name = document.getElementById(`${prefix}Name`).value || (prefix === 'v1' ? 'Вариант 1' : 'Вариант 2');
             const price = parseFloat(document.getElementById(`${prefix}Price`).value) || 1;
             const rows = document.querySelectorAll(`#${prefix}CriteriaList .criteria-item`);
-            
             let criteria = [];
             let sumPlus = 0;
             let sumMinus = 0;
@@ -985,7 +981,6 @@
                 } else {
                     sumMinus += cWeight;
                 }
-
                 criteria.push({ name: cName, type: cType, weight: cWeight });
             });
 
@@ -994,11 +989,9 @@
 
             if (selectedMethod === 'B') {
                 if (selectedStrategy === 'discount') {
-                    // Логика Скидки: Чем цена ВЫШЕ, тем МЕНЬШЕ ценность балла.
                     if (price > 0) finalScore = (baseBalance / price) * 1000000;
                 } else {
-                    // Логика Наценки (Прежний вариант): Чем цена ВЫШЕ, тем ВЫШЕ ценность балла (прямое умножение)
-                    finalScore = baseBalance * price / 100000;
+                    finalScore = (baseBalance * price) / 100000;
                 }
             } else {
                 finalScore = baseBalance;
@@ -1014,265 +1007,10 @@
             return score.toLocaleString('ru-RU');
         }
 
-        function calculateResults() {
-            const globalMax = updateGlobalMaxWeight();
-            const v1 = getVariantData('v1', globalMax);
-            
-            document.getElementById('resultsSection').style.display = 'block';
-            
-            // Автоматическое сворачивание итоговых списков вариантов в аккордеоны (Пункт 1)
-            document.getElementById('resultCardV1').classList.add('collapsed');
-            document.getElementById('resultCardV2').classList.add('collapsed');
-            
-            const labelV1 = document.getElementById('indexLabelV1');
-            
-            if (currentMode === 'single') {
-                labelV1.textContent = selectedMethod === 'B' ? "Оценка ценности:" : "Баланс баллов:";
-                
-                document.getElementById('resNameV1').textContent = `${v1.name} (Развернуть список)`;
-                document.getElementById('resScoreV1').textContent = formatScore(v1.finalScore, v1.method);
-                renderSummaryList('resListV1', v1.criteria);
-                
-                document.getElementById('resultCardV2').style.display = 'none';
-                
-                // Для одиночного режима теперь тоже генерируем красивый блок баров и баннер (Пункт 3)
-                document.getElementById('winnerBanner').style.display = 'block';
-                document.getElementById('comparisonBarsContainer').style.display = 'block';
-                
-                const bannerTitle = document.getElementById('winnerTitle');
-                const bannerReason = document.getElementById('winnerReason');
-                
-                bannerTitle.textContent = `📊 Анализ объекта: ${v1.name}`;
-                if (selectedMethod === 'A') {
-                    let total = v1.sumPlus + v1.sumMinus;
-                    let pPct = total > 0 ? Math.round((v1.sumPlus / total) * 100) : 100;
-                    bannerReason.textContent = `Общий баланс составляет ${v1.baseBalance} баллов. Плюсы составляют ${pPct}% от всей массы критериев.`;
-                } else {
-                    bannerReason.textContent = `Объект обработан по методу "${selectedStrategy === 'discount' ? 'Скидка' : 'Наценка'}" с результатом эффективности ${v1.finalScore.toFixed(2)}.`;
-                }
-
-                // В одиночном режиме бар строит соотношение плюсов и минусов самого себя
-                let maxScore = Math.max(v1.sumPlus, v1.sumMinus);
-                if (maxScore <= 0) maxScore = 1;
-                let plusPct = (v1.sumPlus / maxScore) * 100;
-                let minusPct = (v1.sumMinus / maxScore) * 100;
-                
-                const barTitleEl = document.getElementById('comparisonBarsTitle');
-                if (v1.sumPlus >= v1.sumMinus) {
-                    let diff = v1.sumMinus > 0 ? Math.round(((v1.sumPlus - v1.sumMinus)/v1.sumMinus)*100) : 100;
-                    barTitleEl.textContent = `Соотношение аргументов: Плюсы превосходят Минусы на ${diff}%`;
-                } else {
-                    let diff = v1.sumPlus > 0 ? Math.round(((v1.sumMinus - v1.sumPlus)/v1.sumPlus)*100) : 100;
-                    barTitleEl.textContent = `Соотношение аргументов: Минусы превосходят Плюсы на ${diff}%`;
-                }
-
-                renderSingleProgressBar('comparisonBarsGrid', v1, plusPct, minusPct);
-
-            } else {
-                const v2 = getVariantData('v2', globalMax);
-                
-                labelV1.textContent = selectedMethod === 'B' ? "Индекс ценности:" : "Итог:";
-                document.getElementById('indexLabelV2').textContent = selectedMethod === 'B' ? "Индекс ценности:" : "Итог:";
-
-                document.getElementById('resNameV1').textContent = `${v1.name} (Развернуть список)`;
-                document.getElementById('resScoreV1').textContent = formatScore(v1.finalScore, v1.method);
-                renderSummaryList('resListV1', v1.criteria);
-
-                document.getElementById('resultCardV2').style.display = 'block';
-                document.getElementById('resNameV2').textContent = `${v2.name} (Развернуть список)`;
-                document.getElementById('resScoreV2').textContent = formatScore(v2.finalScore, v2.method);
-                renderSummaryList('resListV2', v2.criteria);
-                
-                document.getElementById('winnerBanner').style.display = 'block';
-                document.getElementById('comparisonBarsContainer').style.display = 'block';
-                
-                const bannerTitle = document.getElementById('winnerTitle');
-                const bannerReason = document.getElementById('winnerReason');
-
-                let winner = null;
-                let loser = null;
-
-                if (v1.finalScore > v2.finalScore) {
-                    winner = v1; loser = v2;
-                    bannerTitle.textContent = `🏆 Рекомендуется: ${v1.name}`;
-                    bannerReason.textContent = `Вариант лидирует по уровню расчетной эффективности.`;
-                } else if (v2.finalScore > v1.finalScore) {
-                    winner = v2; loser = v1;
-                    bannerTitle.textContent = `🏆 Рекомендуется: ${v2.name}`;
-                    bannerReason.textContent = `Объект опережает конкурента по уровню расчетной эффективности.`;
-                } else {
-                    bannerTitle.textContent = `⚖️ Равнозначные варианты`;
-                    bannerReason.textContent = `Математическая ценность сравниваемых объектов полностью идентична.`;
-                }
-
-                let maxScore = Math.max(v1.finalScore, v2.finalScore);
-                if (maxScore <= 0) maxScore = 1;
-                
-                let v1PctOfMax = (v1.finalScore / maxScore) * 100;
-                let v2PctOfMax = (v2.finalScore / maxScore) * 100;
-                if(v1PctOfMax < 0) v1PctOfMax = 0;
-                if(v2PctOfMax < 0) v2PctOfMax = 0;
-
-                let diffPercent = 0;
-                if (loser && loser.finalScore !== 0) {
-                    diffPercent = Math.round(((winner.finalScore - loser.finalScore) / Math.abs(loser.finalScore)) * 100);
-                } else if (winner && loser && loser.finalScore === 0 && winner.finalScore > 0) {
-                    diffPercent = 100;
-                }
-                
-                const barTitleEl = document.getElementById('comparisonBarsTitle');
-                if (winner && loser && v1.finalScore !== v2.finalScore) {
-                    barTitleEl.textContent = `Анализ: ${winner.name} эффективнее, чем ${loser.name} на ${diffPercent}%`;
-                } else {
-                    barTitleEl.textContent = `Сравнение вариантов эффективности (Варианты равны)`;
-                }
-
-                renderComplexProgressBar('comparisonBarsGrid', v1, v2, v1PctOfMax, v2PctOfMax);
-            }
-            
-            document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
-        }
-
-        // Рендеринг баров для ОДНОГО варианта (Пункт 3)
-        function renderSingleProgressBar(containerId, v1, plusPct, minusPct) {
-            const grid = document.getElementById(containerId);
-            grid.innerHTML = '';
-
-            let totalWeights = v1.sumPlus + v1.sumMinus;
-            let plusRatio = totalWeights > 0 ? (v1.sumPlus / totalWeights) * 100 : 100;
-            let minusRatio = totalWeights > 0 ? (v1.sumMinus / totalWeights) * 100 : 0;
-
-            let recText = '';
-            if (selectedMethod === 'B') {
-                if (v1.sumPlus > 0) {
-                    let defectPercent = Math.round((v1.sumMinus / v1.sumPlus) * 100);
-                    if (selectedStrategy === 'discount') {
-                        // Стратегия Скидка
-                        let suggestedDiscount = Math.floor(v1.price * (v1.sumMinus / (v1.sumPlus + v1.sumMinus)));
-                        let targetPrice = v1.price - suggestedDiscount;
-                        recText = `💡 <b>Обоснование скидки:</b> Минусы составляют <b>${defectPercent}%</b> от объёма плюсов. Рекомендуется запросить скидку соизмеримую влиянию негативных факторов в размере <b>${suggestedDiscount.toLocaleString('ru-RU')} руб.</b> (Целевая стоимость: <b>${targetPrice.toLocaleString('ru-RU')} руб.</b>).`;
-                    } else {
-                        // Стратегия Цена / Наценка
-                        let suggestedPremium = Math.floor(v1.price * (v1.sumMinus / v1.sumPlus));
-                        let targetPrice = v1.price + suggestedPremium;
-                        recText = `💡 <b>Обоснование наценки:</b> Критерии минусов составляют <b>${defectPercent}%</b>. Чтобы полностью компенсировать или нивелировать эти риски/неудобства, целесообразно поднять бюджет или ценность предложения на <b>+${suggestedPremium.toLocaleString('ru-RU')} руб.</b> (Целевой эквивалент: <b>${targetPrice.toLocaleString('ru-RU')} руб.</b>).`;
-                    }
-                } else if(v1.sumMinus > 0) {
-                    recText = `💡 Объект состоит только из минусов. Корректный пересчет пропорции невозможен.`;
-                }
-            }
-
-            const wrapper = document.createElement('div');
-            wrapper.className = 'bar-item-wrapper';
-            wrapper.style.gridColumn = 'span 2'; // Растягиваем на всю ширину
-            wrapper.innerHTML = `
-                <div class="bar-label-row">
-                    <span>${v1.name} (Соотношение внутренних сил)</span>
-                </div>
-                <div class="outer-progress-bar">
-                    <div class="inner-relative-fill" style="width: 100%">
-                        <div class="sub-bar-minus" style="width: ${minusRatio}%">
-                            ${minusRatio > 8 ? `<span class="bar-text-left-minus">${v1.sumMinus}-</span>` : ''}
-                        </div>
-                        <div class="sub-bar-plus" style="width: ${plusRatio}%">
-                            ${plusRatio > 8 ? `<span class="bar-text-left-plus">${v1.sumPlus}+</span>` : ''}
-                        </div>
-                    </div>
-                    <div class="bar-score-overlay">${v1.baseBalance} баллов</div>
-                </div>
-                ${recText ? `<div class="bar-recommendation" style="margin-top: 8px; font-size: 0.85rem;">${recText}</div>` : ''}
-            `;
-            grid.appendChild(wrapper);
-        }
-
-        // Рендеринг баров для СРАВНЕНИЯ вариантов (Пункт 2 & 4)
-        function renderComplexProgressBar(containerId, v1, v2, v1Pct, v2Pct) {
-            const grid = document.getElementById(containerId);
-            grid.innerHTML = '';
-
-            const data = [
-                { obj: v1, pct: v1Pct, key: 'v1' },
-                { obj: v2, pct: v2Pct, key: 'v2' }
-            ];
-
-            // На последнем месте выигрышный вариант
-            if (v1.finalScore > v2.finalScore) {
-                data[0] = { obj: v2, pct: v2Pct, key: 'v2' };
-                data[1] = { obj: v1, pct: v1Pct, key: 'v1' };
-            }
-
-            data.forEach(item => {
-                const totalWeights = item.obj.sumPlus + item.obj.sumMinus;
-                let plusRatio = totalWeights > 0 ? (item.obj.sumPlus / totalWeights) * 100 : 100;
-                let minusRatio = totalWeights > 0 ? (item.obj.sumMinus / totalWeights) * 100 : 0;
-
-                let recText = '';
-                if (currentMode === 'compare' && v1.finalScore !== v2.finalScore) {
-                    const competitor = (item.key === 'v1') ? v2 : v1;
-                    if (item.obj.finalScore < competitor.finalScore) {
-                        if (selectedMethod === 'B') {
-                            if (selectedStrategy === 'discount') {
-                                if (item.obj.baseBalance > 0) {
-                                    let targetPrice = Math.floor((item.obj.baseBalance * 1000000) / competitor.finalScore);
-                                    if (targetPrice > 0) {
-                                        recText = `💡 Обоснование скидки: Если продавец снизит цену до <b>${targetPrice.toLocaleString('ru-RU')} руб.</b> или менее, этот вариант станет выгоднее!`;
-                                    }
-                                } else {
-                                    recText = `💡 Баланс критериев отрицательный (${item.obj.baseBalance}). Снижение цены не сделает его выгодным.`;
-                                }
-                            } else {
-                                // Прежняя логика Наценки
-                                if (competitor.finalScore > 0 && item.obj.baseBalance > 0) {
-                                    let targetPrice = Math.floor((competitor.finalScore * 100000) / item.obj.baseBalance);
-                                    recText = `💡 Обоснование цены: Если поднять ценность/бюджет до <b>${targetPrice.toLocaleString('ru-RU')} руб.</b>, объект выиграет по эффективности наценки.`;
-                                }
-                            }
-                        } else {
-                            let weightDiff = competitor.finalScore - item.obj.finalScore;
-                            recText = `💡 Наращивание преимуществ: Необходимо добавить ценности на <b>+${weightDiff + 1}</b> баллов, чтобы обойти конкурента.`;
-                        }
-                    }
-                }
-
-                const wrapper = document.createElement('div');
-                wrapper.className = 'bar-item-wrapper';
-                wrapper.innerHTML = `
-                    <div class="bar-label-row">
-                        <span>${item.obj.name}</span>
-                    </div>
-                    <div class="outer-progress-bar">
-                        <div class="inner-relative-fill" style="width: ${item.pct}%">
-                            <div class="sub-bar-minus" style="width: ${minusRatio}%">
-                                ${minusRatio > 8 ? `<span class="bar-text-left-minus">${item.obj.sumMinus}-</span>` : ''}
-                            </div>
-                            <div class="sub-bar-plus" style="width: ${plusRatio}%">
-                                ${plusRatio > 8 ? `<span class="bar-text-left-plus">${item.obj.sumPlus}+</span>` : ''}
-                            </div>
-                        </div>
-                        <div class="bar-score-overlay">${formatScore(item.obj.finalScore, selectedMethod)} (итог: ${item.obj.baseBalance})</div>
-                    </div>
-                    ${recText ? `<div class="bar-recommendation">${recText}</div>` : ''}
-                `;
-                grid.appendChild(wrapper);
-            });
-        }
-
         function renderSummaryList(elementId, criteria) {
             const list = document.getElementById(elementId);
             list.innerHTML = '';
-            
-            if (criteria.length === 0) {
-                list.innerHTML = '<li class="summary-item" style="color: var(--text-muted); justify-content: center;">Критерии отсутствуют</li>';
-                return;
-            }
-
-            const sorted = [...criteria].sort((a, b) => {
-                const valA = a.type === 'plus' ? a.weight : -a.weight;
-                const valB = b.type === 'plus' ? b.weight : -b.weight;
-                return valA - valB;
-            });
-
-            sorted.forEach(c => {
+            criteria.forEach(c => {
                 const li = document.createElement('li');
                 li.className = 'summary-item';
                 li.innerHTML = `
@@ -1285,94 +1023,156 @@
             });
         }
 
+        function calculateResults() {
+            const globalMax = updateGlobalMaxWeight();
+            const v1 = getVariantData('v1', globalMax);
+            document.getElementById('resultsSection').style.display = 'block';
+
+            document.getElementById('resultCardV1').classList.add('collapsed');
+            document.getElementById('resultCardV2').classList.add('collapsed');
+            
+            const labelV1 = document.getElementById('indexLabelV1');
+
+            if (currentMode === 'single') {
+                labelV1.textContent = selectedMethod === 'B' ? "Оценка ценности:" : "Баланс баллов:";
+                document.getElementById('resNameV1').textContent = `${v1.name} (Развернуть список)`;
+                document.getElementById('resScoreV1').textContent = formatScore(v1.finalScore, v1.method);
+                renderSummaryList('resListV1', v1.criteria);
+                document.getElementById('resultCardV2').style.display = 'none';
+                
+                document.getElementById('winnerBanner').style.display = 'block';
+                document.getElementById('winnerTitle').textContent = 'Анализ сформирован';
+                document.getElementById('winnerReason').textContent = `Для варианта "${v1.name}" успешно рассчитаны показатели.`;
+                document.getElementById('comparisonBarsContainer').style.display = 'none';
+            } else {
+                const v2 = getVariantData('v2', globalMax);
+                labelV1.textContent = selectedMethod === 'B' ? "Индекс:" : "Баланс:";
+                document.getElementById('indexLabelV2').textContent = selectedMethod === 'B' ? "Индекс:" : "Баланс:";
+                
+                document.getElementById('resNameV1').textContent = `${v1.name} (Развернуть)`;
+                document.getElementById('resScoreV1').textContent = formatScore(v1.finalScore, v1.method);
+                renderSummaryList('resListV1', v1.criteria);
+
+                document.getElementById('resultCardV2').style.display = 'block';
+                document.getElementById('resNameV2').textContent = `${v2.name} (Развернуть)`;
+                document.getElementById('resScoreV2').textContent = formatScore(v2.finalScore, v2.method);
+                renderSummaryList('resListV2', v2.criteria);
+
+                document.getElementById('winnerBanner').style.display = 'block';
+                document.getElementById('comparisonBarsContainer').style.display = 'block';
+
+                let winnerName = '';
+                let reason = '';
+                if (v1.finalScore > v2.finalScore) {
+                    winnerName = v1.name;
+                    reason = `Вариант "${v1.name}" эффективнее на ${(v1.finalScore - v2.finalScore).toFixed(1)} ед.`;
+                } else if (v2.finalScore > v1.finalScore) {
+                    winnerName = v2.name;
+                    reason = `Вариант "${v2.name}" эффективнее на ${(v2.finalScore - v1.finalScore).toFixed(1)} ед.`;
+                } else {
+                    winnerName = 'Ничья';
+                    reason = 'Оба варианта имеют абсолютно равную итоговую оценку.';
+                }
+                document.getElementById('winnerTitle').textContent = `Фаворит: ${winnerName}`;
+                document.getElementById('winnerReason').textContent = reason;
+
+                // Генерация баров сравнения
+                const grid = document.getElementById('comparisonBarsGrid');
+                grid.innerHTML = '';
+                [v1, v2].forEach(v => {
+                    const total = v.sumPlus + v.sumMinus || 1;
+                    const pPct = (v.sumPlus / total) * 100;
+                    const mPct = (v.sumMinus / total) * 100;
+
+                    const wrapper = document.createElement('div');
+                    wrapper.className = 'bar-item-wrapper';
+                    wrapper.innerHTML = `
+                        <div class="bar-label-row"><span>${v.name}</span><span>Баланс: ${v.baseBalance}</span></div>
+                        <div class="outer-progress-bar">
+                            <div class="inner-relative-fill" style="width: 100%">
+                                <div class="sub-bar-minus" style="width: ${mPct}%"><span class="bar-text-left-minus">Минусы</span></div>
+                                <div class="sub-bar-plus" style="width: ${pPct}%"><span class="bar-text-left-plus">Плюсы</span></div>
+                            </div>
+                        </div>
+                    `;
+                    grid.appendChild(wrapper);
+                });
+            }
+            saveToStorage();
+        }
+
         function copyToClipboard() {
             const globalMax = updateGlobalMaxWeight();
             const v1 = getVariantData('v1', globalMax);
-            let text = `📊 *ОТЧЕТ АНАЛИЗАТОРА ПРИНЯТИЯ РЕШЕНИЙ*\n`;
-            text += `===================================\n\n`;
+            let text = `📋 ОТЧЕТ АНАЛИЗАТОРА\n\n`;
             
             if (currentMode === 'single') {
-                text += `👤 *Объект анализа:* ${v1.name}\n`;
-                text += `📈 *Итоговый показатель ценности:* ${formatScore(v1.finalScore, v1.method)}\n`;
-                text += `💵 *Выбранный алгоритм:* ${v1.method === 'A' ? 'Прямая сумма баллов' : 'Баллы / Цена'}\n`;
-                if(v1.method === 'B') text += `⚙️ *Тип расчета:* ${v1.strategy === 'discount' ? 'Скидка' : 'Наценка'}\n`;
-                text += `➕ *Сумма плюсов:* +${v1.sumPlus} | ➖ *Сумма минусов:* -${v1.sumMinus}\n`;
-                text += `🎯 *Пиковый вес критерия:* ${globalMax}\n\n`;
-                text += `📋 *СПИСОК АРГУМЕНТОВ:*\n`;
-                
-                const sorted = [...v1.criteria].sort((a,b) => (a.type==='plus'?a.weight:-a.weight) - (b.type==='plus'?b.weight:-b.weight));
-                sorted.forEach((c, idx) => {
-                    text += `  ${idx + 1}. ${c.type === 'plus' ? '🟢 [Плюс]' : '🔴 [Минус]'} ${c.name}: ${c.type === 'plus' ? '+' : '-'}${c.weight}\n`;
-                });
+                text += `Вариант: ${v1.name}\n`;
+                text += `Итог: ${formatScore(v1.finalScore, v1.method)}\n`;
             } else {
                 const v2 = getVariantData('v2', globalMax);
-                text += `⚖️ *СРАВНИТЕЛЬНЫЙ АНАЛИЗ ВАРИАНТОВ*\n\n`;
-                text += `📌 *1. ${v1.name}*\n`;
-                text += `   • Итоговая оценка: ${formatScore(v1.finalScore, v1.method)}\n`;
-                text += `   • Чистый баланс: ${v1.baseBalance}\n`;
-                if(selectedMethod==='B') text += `   • Заявленная цена: ${v1.price.toLocaleString('ru-RU')} руб.\n`;
-                
-                text += `\n📌 *2. ${v2.name}*\n`;
-                text += `   • Итоговая оценка: ${formatScore(v2.finalScore, v2.method)}\n`;
-                text += `   • Чистый баланс: ${v2.baseBalance}\n`;
-                if(selectedMethod==='B') text += `   • Заявленная цена: ${v2.price.toLocaleString('ru-RU')} руб.\n\n`;
-                
-                let winnerName = 'Ничья';
-                if(v1.finalScore > v2.finalScore) winnerName = v1.name;
-                if(v2.finalScore > v1.finalScore) winnerName = v2.name;
-                
-                text += `🏆 *ОПТИМАЛЬНЫЙ ВАРИАНТ:* ${winnerName}\n`;
+                text += `1️⃣ ${v1.name}: ${formatScore(v1.finalScore, v1.method)}\n`;
+                text += `2️⃣ ${v2.name}: ${formatScore(v2.finalScore, v2.method)}\n\n`;
+                if (v1.finalScore > v2.finalScore) text += `🏆 Лидер: ${v1.name}`;
+                else if (v2.finalScore > v1.finalScore) text += `🏆 Лидер: ${v2.name}`;
+                else text += `🤝 Варианты равны`;
             }
-            
-            text += `\n_Сгенерировано автоматически в системе Анализатор._`;
 
-            const el = document.createElement('textarea');
-            el.value = text;
-            document.body.appendChild(el);
-            el.select();
-            document.execCommand('copy');
-            document.body.removeChild(el);
-
-            const toast = document.getElementById('toast');
-            toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 2000);
+            navigator.clipboard.writeText(text).then(() => {
+                const toast = document.getElementById('toast');
+                toast.classList.add('show');
+                setTimeout(() => toast.classList.remove('show'), 2000);
+            });
         }
 
         function saveToStorage() {
             const globalMax = updateGlobalMaxWeight();
+            const getRowsData = (prefix) => {
+                const rows = document.querySelectorAll(`#${prefix}CriteriaList .criteria-item`);
+                let arr = [];
+                rows.forEach(r => {
+                    arr.push({
+                        name: r.querySelector('.crit-name').value,
+                        type: r.querySelector('.type-btn.plus').classList.contains('active') ? 'plus' : 'minus',
+                        weight: r.querySelector('.crit-weight').value
+                    });
+                });
+                return arr;
+            };
+
             const data = {
                 currentMode,
                 selectedMethod,
                 selectedStrategy,
                 v1Name: document.getElementById('v1Name').value,
-                v2Name: document.getElementById('v2Name').value,
                 v1Price: document.getElementById('v1Price').value,
+                v1Data: getRowsData('v1'),
+                v2Name: document.getElementById('v2Name').value,
                 v2Price: document.getElementById('v2Price').value,
-                v1Data: getVariantData('v1', globalMax).criteria,
-                v2Data: getVariantData('v2', globalMax).criteria
+                v2Data: getRowsData('v2')
             };
             localStorage.setItem('analyzer_backup_data', JSON.stringify(data));
         }
 
         function loadFromStorage() {
-            const raw = localStorage.getItem('analyzer_backup_data');
-            if (!raw) return false;
             try {
+                const raw = localStorage.getItem('analyzer_backup_data');
+                if (!raw) return false;
                 const data = JSON.parse(raw);
+
                 currentMode = data.currentMode || 'single';
                 selectedMethod = data.selectedMethod || 'A';
                 selectedStrategy = data.selectedStrategy || 'discount';
-                
+
                 document.getElementById('v1Name').value = data.v1Name || 'Вариант 1';
-                document.getElementById('v2Name').value = data.v2Name || 'Вариант 2';
                 document.getElementById('v1Price').value = data.v1Price || '2000000';
+                document.getElementById('v2Name').value = data.v2Name || 'Вариант 2';
                 document.getElementById('v2Price').value = data.v2Price || '2500000';
 
                 document.getElementById('v1CriteriaList').innerHTML = '';
                 if (data.v1Data && data.v1Data.length > 0) {
                     data.v1Data.forEach(c => addCriteriaRow('v1', c.name, c.type, c.weight));
                 }
-                
                 document.getElementById('v2CriteriaList').innerHTML = '';
                 if (data.v2Data && data.v2Data.length > 0) {
                     data.v2Data.forEach(c => addCriteriaRow('v2', c.name, c.type, c.weight));
