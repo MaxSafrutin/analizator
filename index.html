@@ -3,24 +3,22 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Анализатор Сравнения v2.0</title>
+    <title>Анализатор Сравнения</title>
     
+    <!-- Подключение вашей иконки -->
     <link rel="icon" type="image/png" href="favicon.png">
     <link rel="apple-touch-icon" href="favicon.png">
     
+    <!-- Исходный Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <script>
         tailwind.config = {
             theme: {
                 extend: {
                     colors: {
-                        darkBg: '#070707',
-                        cardBg: '#121212',
-                        accentGold: '#FFF5E2',
-                        bronzeGradStart: '#5F2B26',
-                    },
-                    backgroundImage: {
-                        'gold-gradient': 'linear-gradient(135deg, #5F2B26 0%, #A36A5E 50%, #FFF5E2 100%)',
+                        darkBg: '#0D0E12',
+                        cardBg: '#161820',
+                        accentBlue: '#3B82F6',
                     }
                 }
             }
@@ -29,18 +27,17 @@
     
     <style>
         body {
-            background-color: #070707;
-            color: #FFF5E2;
-            font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: #0D0E12;
+            color: #E2E8F0;
         }
         .custom-scrollbar::-webkit-scrollbar {
             width: 6px;
         }
         .custom-scrollbar::-webkit-scrollbar-track {
-            background: #121212;
+            background: #161820;
         }
         .custom-scrollbar::-webkit-scrollbar-thumb {
-            background: #333;
+            background: #2D3142;
             border-radius: 3px;
         }
         .snow-container {
@@ -49,206 +46,211 @@
             pointer-events: none; z-index: 0; overflow: hidden;
         }
         .snowflake {
-            position: absolute; background: rgba(255,255,255,0.15); border-radius: 50%;
+            position: absolute; background: rgba(255,255,255,0.2); border-radius: 50%;
             animation: fall linear infinite;
         }
         @keyframes fall {
-            0% { transform: translateY(-10px) rotate(0deg); }
-            100% { transform: translateY(105vh) rotate(360deg); }
+            0% { transform: translateY(-10px); }
+            100% { transform: translateY(105vh); }
         }
     </style>
 </head>
-<body class="min-h-screen relative overflow-x-hidden pb-12">
+<body class="min-h-screen relative pb-12">
 
     <div class="snow-container" id="snow"></div>
 
-    <header class="relative z-10 border-b border-zinc-800 bg-black/40 backdrop-blur-md sticky top-0 px-4 py-4">
-        <div class="max-w-6xl mx-auto flex flex-col sm:flex-row justify-between items-center gap-4">
-            <div class="flex items-center gap-3">
-                <img src="favicon.png" alt="Logo" class="w-8 h-8 object-contain rounded">
-                <h1 class="text-xl font-bold bg-gradient-to-r from-[#FFF5E2] to-[#A36A5E] bg-clip-text text-transparent">
-                    SGM Auto — Умный Анализатор
-                </h1>
-            </div>
-            
-            <div class="flex items-center gap-3">
-                <button onclick="openHelpModal()" class="w-9 h-9 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 text-[#FFF5E2] font-bold text-lg transition-all" title="Как пользоваться?">
-                    ?
-                </button>
-                <button onclick="resetAll(true)" class="px-3 py-1.5 bg-zinc-800 text-xs text-zinc-400 hover:text-white rounded border border-zinc-700 hover:border-zinc-500 transition">
-                    Сбросить всё
-                </button>
-            </div>
+    <!-- HEADER -->
+    <header class="relative z-10 border-b border-zinc-800 bg-[#161820]/80 backdrop-blur-md sticky top-0 px-6 py-4 flex justify-between items-center">
+        <div class="flex items-center gap-3">
+            <img src="favicon.png" alt="Favicon" class="w-6 h-6 object-contain">
+            <h1 class="text-lg font-bold text-white tracking-wide">Анализатор Сравнения</h1>
+        </div>
+        <div class="flex items-center gap-3">
+            <!-- Кнопка Инструкции (Пункт 7) -->
+            <button onclick="openHelpModal()" class="w-8 h-8 flex items-center justify-center rounded-full bg-zinc-800 hover:bg-zinc-700 text-zinc-300 font-bold transition-all" title="Как пользоваться?">
+                ?
+            </button>
+            <button onclick="resetAll(true)" class="px-3 py-1.5 bg-zinc-800 text-xs text-zinc-400 hover:text-white rounded border border-zinc-700 transition">
+                Сбросить всё
+            </button>
         </div>
     </header>
 
-    <main class="max-w-6xl mx-auto px-4 mt-6 relative z-10 grid grid-cols-1 gap-6">
+    <main class="max-w-6xl mx-auto px-4 mt-6 relative z-10 space-y-6">
         
-        <div class="p-5 rounded-xl bg-[#121212] border border-zinc-800 shadow-xl">
-            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
-                <div>
-                    <label class="block text-xs text-zinc-400 uppercase tracking-wider mb-2 font-semibold">Режим работы</label>
-                    <div class="grid grid-cols-2 gap-2 bg-black/50 p-1 rounded-lg border border-zinc-800">
-                        <button id="modeCompare" onclick="setMode('compare')" class="py-2 text-sm rounded-md font-medium transition-all text-white bg-zinc-800 shadow shadow-black">
-                            Сравнение (2 Варианта)
-                        </button>
-                        <button id="modeSingle" onclick="setMode('single')" class="py-2 text-sm rounded-md font-medium transition-all text-zinc-400 hover:text-white">
-                            Один Вариант
-                        </button>
-                    </div>
+        <!-- БЛОК НАСТРОЕК РЕЖИМОВ -->
+        <div class="p-5 rounded-xl bg-[#161820] border border-zinc-800/80 shadow-xl grid grid-cols-1 md:grid-cols-3 gap-6">
+            <!-- Выбор режима работы -->
+            <div>
+                <label class="block text-xs text-zinc-400 uppercase tracking-wider mb-2 font-medium">Режим работы</label>
+                <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-lg border border-zinc-800">
+                    <button id="modeCompare" onclick="setMode('compare')" class="py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800 shadow">
+                        Сравнение
+                    </button>
+                    <button id="modeSingle" onclick="setMode('single')" class="py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white">
+                        Один вариант
+                    </button>
                 </div>
+            </div>
 
-                <div>
-                    <label class="block text-xs text-zinc-400 uppercase tracking-wider mb-2 font-semibold">Целевая стратегия</label>
-                    <div class="grid grid-cols-3 gap-1 bg-black/50 p-1 rounded-lg border border-zinc-800">
-                        <button id="stratStandard" onclick="setStrategyMode('standard')" class="py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800">
-                            Стандарт
-                        </button>
-                        <button id="stratPrice" onclick="setStrategyMode('price')" class="py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white" title="Аргументировать стоимость">
-                            Аргум. стоимость
-                        </button>
-                        <button id="stratDiscount" onclick="setStrategyMode('discount')" class="py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white" title="Аргументировать скидку">
-                            Аргум. скидку
-                        </button>
-                    </div>
+            <!-- Целевая стратегия (Переименованные кнопки - Пункт 2) -->
+            <div>
+                <label class="block text-xs text-zinc-400 uppercase tracking-wider mb-2 font-medium">Стратегия анализа</label>
+                <div class="grid grid-cols-3 gap-1 bg-black/40 p-1 rounded-lg border border-zinc-800">
+                    <button id="stratStandard" onclick="setStrategyMode('standard')" class="py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800">
+                        Стандарт
+                    </button>
+                    <button id="stratPrice" onclick="setStrategyMode('price')" class="py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white" title="Аргументировать стоимость">
+                        Аргум. стоимость
+                    </button>
+                    <button id="stratDiscount" onclick="setStrategyMode('discount')" class="py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white" title="Аргументировать скидку">
+                        Аргум. скидку
+                    </button>
                 </div>
+            </div>
 
-                <div>
-                    <label class="block text-xs text-zinc-400 uppercase tracking-wider mb-2 font-semibold">Метод оценки весов</label>
-                    <div class="grid grid-cols-2 gap-2 bg-black/50 p-1 rounded-lg border border-zinc-800">
-                        <button id="methodScale" onclick="setCalculationMethod('scale')" class="py-2 text-sm rounded-md font-medium transition text-white bg-zinc-800">
-                            Шкала (1-10)
-                        </button>
-                        <button id="methodRank" onclick="setCalculationMethod('rank')" class="py-2 text-sm rounded-md font-medium transition text-zinc-400 hover:text-white">
-                            Ранжирование
-                        </button>
-                    </div>
+            <!-- Метод расчета веса -->
+            <div>
+                <label class="block text-xs text-zinc-400 uppercase tracking-wider mb-2 font-medium">Оценка весов</label>
+                <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-lg border border-zinc-800">
+                    <button id="methodScale" onclick="setCalculationMethod('scale')" class="py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800">
+                        Шкала (1-10)
+                    </button>
+                    <button id="methodRank" onclick="setCalculationMethod('rank')" class="py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white">
+                        Ранжирование
+                    </button>
                 </div>
             </div>
         </div>
 
+        <!-- ДАННЫЕ ВАРИАНТОВ -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="variantsGrid">
             
-            <div id="v1Wrapper" class="p-5 rounded-xl bg-[#121212] border border-zinc-800 flex flex-col justify-between transition-all">
+            <!-- ВАРИАНТ 1 -->
+            <div id="v1Wrapper" class="p-5 rounded-xl bg-[#161820] border border-zinc-800/80 flex flex-col justify-between">
                 <div>
                     <div class="flex gap-3 mb-4">
-                        <input type="text" id="v1Name" placeholder="Название Варианта 1" value="Вариант А" class="w-full bg-black/60 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-zinc-600 font-bold">
-                        <input type="number" id="v1Price" placeholder="Цена" class="w-32 bg-black/60 border border-zinc-800 rounded-lg px-3 py-2.5 text-white text-right focus:outline-none focus:border-zinc-600">
+                        <input type="text" id="v1Name" placeholder="Название варианта 1" value="Вариант 1" class="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-zinc-700 font-semibold text-sm">
+                        <input type="number" id="v1Price" placeholder="Цена" class="w-28 bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white text-right focus:outline-none focus:border-zinc-700 text-sm">
                     </div>
                     
                     <div class="flex justify-between items-center mb-3">
-                        <span class="text-xs text-zinc-400 font-medium">Критерии и Оценки</span>
-                        <button onclick="openSmartInsert('v1')" class="text-xs text-amber-200/80 hover:text-amber-100 flex items-center gap-1">
-                            ⚡ Умное распределение
+                        <span class="text-xs text-zinc-400">Критерии оценки</span>
+                        <button onclick="openSmartInsert('v1')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                            ⚡ Умный ввод
                         </button>
                     </div>
 
+                    <!-- Аккордеон списка 1 (Пункт 4) -->
                     <div id="v1CriteriaContainer" class="transition-all duration-300 overflow-hidden">
-                        <div id="v1CriteriaList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar"></div>
-                        <button onclick="addCriteriaRow('v1')" class="w-full mt-3 py-2 border border-dashed border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 text-xs rounded-lg transition">
-                            + Добавить критерий
+                        <div id="v1CriteriaList" class="space-y-2 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar"></div>
+                        <button onclick="addCriteriaRow('v1')" class="w-full mt-3 py-2 border border-dashed border-zinc-800 hover:border-zinc-700 text-zinc-500 hover:text-zinc-400 text-xs rounded-lg transition">
+                            + Добавить строку критерия
                         </button>
                     </div>
                 </div>
             </div>
 
-            <div id="v2Wrapper" class="p-5 rounded-xl bg-[#121212] border border-zinc-800 flex flex-col justify-between transition-all">
+            <!-- ВАРИАНТ 2 -->
+            <div id="v2Wrapper" class="p-5 rounded-xl bg-[#161820] border border-zinc-800/80 flex flex-col justify-between">
                 <div>
                     <div class="flex gap-3 mb-4">
-                        <input type="text" id="v2Name" placeholder="Название Варианта 2" value="Вариант Б" class="w-full bg-black/60 border border-zinc-800 rounded-lg px-4 py-2.5 text-white focus:outline-none focus:border-zinc-600 font-bold">
-                        <input type="number" id="v2Price" placeholder="Цена" class="w-32 bg-black/60 border border-zinc-800 rounded-lg px-3 py-2.5 text-white text-right focus:outline-none focus:border-zinc-600">
+                        <input type="text" id="v2Name" placeholder="Название варианта 2" value="Вариант 2" class="w-full bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white focus:outline-none focus:border-zinc-700 font-semibold text-sm">
+                        <input type="number" id="v2Price" placeholder="Цена" class="w-28 bg-black/40 border border-zinc-800 rounded-lg px-3 py-2 text-white text-right focus:outline-none focus:border-zinc-700 text-sm">
                     </div>
                     
                     <div class="flex justify-between items-center mb-3">
-                        <span class="text-xs text-zinc-400 font-medium">Критерии и Оценки</span>
-                        <button onclick="openSmartInsert('v2')" class="text-xs text-amber-200/80 hover:text-amber-100 flex items-center gap-1">
-                            ⚡ Умное распределение
+                        <span class="text-xs text-zinc-400">Критерии оценки</span>
+                        <button onclick="openSmartInsert('v2')" class="text-xs text-blue-400 hover:text-blue-300 flex items-center gap-1">
+                            ⚡ Умный ввод
                         </button>
                     </div>
 
+                    <!-- Аккордеон списка 2 (Пункт 4) -->
                     <div id="v2CriteriaContainer" class="transition-all duration-300 overflow-hidden">
-                        <div id="v2CriteriaList" class="space-y-2 max-h-[380px] overflow-y-auto pr-1 custom-scrollbar"></div>
-                        <button onclick="addCriteriaRow('v2')" class="w-full mt-3 py-2 border border-dashed border-zinc-800 hover:border-zinc-700 text-zinc-400 hover:text-zinc-200 text-xs rounded-lg transition">
-                            + Добавить критерий
+                        <div id="v2CriteriaList" class="space-y-2 max-h-[360px] overflow-y-auto pr-1 custom-scrollbar"></div>
+                        <button onclick="addCriteriaRow('v2')" class="w-full mt-3 py-2 border border-dashed border-zinc-800 hover:border-zinc-700 text-zinc-500 hover:text-zinc-400 text-xs rounded-lg transition">
+                            + Добавить строку критерия
                         </button>
                     </div>
                 </div>
             </div>
         </div>
 
-        <div class="text-center my-4">
-            <button onclick="calculateResults()" class="px-10 py-4 bg-gradient-to-r from-[#5F2B26] to-[#A36A5E] hover:from-[#73352F] hover:to-[#B57A6E] text-[#FFF5E2] font-bold text-base rounded-xl shadow-xl shadow-black/50 hover:scale-[1.01] active:scale-[0.99] transition-all">
+        <!-- КНОПКА СФОРМИРОВАТЬ ОТЧЕТ -->
+        <div class="text-center py-2">
+            <button onclick="calculateResults()" class="px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white font-semibold text-sm rounded-lg shadow-lg transition-all active:scale-[0.99]">
                 Сформировать отчет
             </button>
         </div>
 
+        <!-- БЛОК РЕЗУЛЬТАТОВ (ОРИГИНАЛЬНЫЙ ВИД) -->
         <div id="resultsSection" class="hidden space-y-6">
             
-            <div id="statusBarCard" class="p-6 rounded-xl bg-[#121212] border border-zinc-800 shadow-2xl">
-                <h3 class="text-sm font-bold text-zinc-400 uppercase tracking-wider mb-4">Общий баланс сил</h3>
-                
+            <!-- СТАТУС БАРЫ СРАВНЕНИЯ -->
+            <div id="statusBarCard" class="p-5 rounded-xl bg-[#161820] border border-zinc-800">
+                <h3 class="text-xs font-semibold text-zinc-400 uppercase tracking-wider mb-4">Баланс весовых показателей</h3>
                 <div class="space-y-4">
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span id="statusV1PositiveLabel" class="text-emerald-400 font-medium">Вариант А (+)</span>
-                            <span id="statusV2PositiveLabel" class="text-emerald-400 font-medium">(+) Вариант Б</span>
+                            <span id="statusV1PositiveLabel" class="text-emerald-400">Вариант 1 (+)</span>
+                            <span id="statusV2PositiveLabel" class="text-emerald-400">(+) Вариант 2</span>
                         </div>
-                        <div class="w-full h-4 bg-zinc-900 rounded-full overflow-hidden flex border border-zinc-800">
-                            <div id="barV1Positive" class="h-full bg-emerald-600 transition-all duration-500" style="width: 50%"></div>
-                            <div id="barV2Positive" class="h-full bg-emerald-500/30 transition-all duration-500 ml-auto" style="width: 50%"></div>
+                        <div class="w-full h-3 bg-black/40 rounded-full overflow-hidden flex border border-zinc-800">
+                            <div id="barV1Positive" class="h-full bg-emerald-500 transition-all duration-500"></div>
+                            <div id="barV2Positive" class="h-full bg-emerald-500/20 transition-all duration-500 ml-auto"></div>
                         </div>
                     </div>
-
                     <div>
                         <div class="flex justify-between text-xs mb-1">
-                            <span id="statusV1NegativeLabel" class="text-rose-400 font-medium font-medium">Вариант А (-)</span>
-                            <span id="statusV2NegativeLabel" class="text-rose-400 font-medium">(-) Вариант Б</span>
+                            <span id="statusV1NegativeLabel" class="text-rose-400">Вариант 1 (-)</span>
+                            <span id="statusV2NegativeLabel" class="text-rose-400">(-) Вариант 2</span>
                         </div>
-                        <div class="w-full h-4 bg-zinc-900 rounded-full overflow-hidden flex border border-zinc-800">
-                            <div id="barV1Negative" class="h-full bg-rose-600 transition-all duration-500" style="width: 50%"></div>
-                            <div id="barV2Negative" class="h-full bg-rose-500/30 transition-all duration-500 ml-auto" style="width: 50%"></div>
+                        <div class="w-full h-3 bg-black/40 rounded-full overflow-hidden flex border border-zinc-800">
+                            <div id="barV1Negative" class="h-full bg-rose-500 transition-all duration-500"></div>
+                            <div id="barV2Negative" class="h-full bg-rose-500/20 transition-all duration-500 ml-auto"></div>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="p-6 rounded-xl bg-[#121212] border border-zinc-800 shadow-2xl space-y-6">
+            <!-- СТРУКТУРИРОВАННЫЙ ИТОГОВЫЙ ОТЧЕТ -->
+            <div class="p-6 rounded-xl bg-[#161820] border border-zinc-800 space-y-6">
                 <div class="border-b border-zinc-800 pb-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
                     <div>
-                        <h2 class="text-xl font-bold text-white">Итоговый аналитический отчет</h2>
-                        <p class="text-xs text-zinc-500 mt-1">Автоматическая агрегация аргументов по силе влияния</p>
+                        <h2 class="text-lg font-bold text-white">Результаты анализа</h2>
+                        <p class="text-xs text-zinc-500 mt-0.5">Сгруппированные аргументы по силе влияния</p>
                     </div>
-                    <div id="finalScoreBadge" class="px-4 py-2 bg-zinc-900 border border-zinc-800 rounded-lg text-sm font-bold text-[#FFF5E2]">
+                    <div id="finalScoreBadge" class="px-3 py-1.5 bg-black/40 border border-zinc-800 rounded-lg text-xs font-semibold text-zinc-200">
                         --
                     </div>
                 </div>
 
+                <!-- Таблицы отчетов вариантов -->
                 <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="reportTablesGrid">
+                    <!-- Отчет Варианта 1 -->
                     <div class="space-y-4">
-                        <h3 id="reportTitleV1" class="text-base font-bold text-zinc-200 border-b border-zinc-800 pb-1">--</h3>
-                        
+                        <h3 id="reportTitleV1" class="text-sm font-bold text-zinc-300 border-b border-zinc-800 pb-1">--</h3>
                         <div>
-                            <h4 class="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Преимущества (Сильные стороны)</h4>
-                            <div id="reportV1PositiveList" class="space-y-1.5 text-sm"></div>
+                            <h4 class="text-xs font-medium text-emerald-400 mb-2">Преимущества (+)</h4>
+                            <div id="reportV1PositiveList" class="space-y-1.5 text-xs"></div>
                         </div>
-                        
                         <div>
-                            <h4 class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-2">Недостатки / Риски</h4>
-                            <div id="reportV1NegativeList" class="space-y-1.5 text-sm"></div>
+                            <h4 class="text-xs font-medium text-rose-400 mb-2">Недостатки (-)</h4>
+                            <div id="reportV1NegativeList" class="space-y-1.5 text-xs"></div>
                         </div>
                     </div>
 
+                    <!-- Отчет Варианта 2 -->
                     <div id="reportV2Column" class="space-y-4">
-                        <h3 id="reportTitleV2" class="text-base font-bold text-zinc-200 border-b border-zinc-800 pb-1">--</h3>
-                        
+                        <h3 id="reportTitleV2" class="text-sm font-bold text-zinc-300 border-b border-zinc-800 pb-1">--</h3>
                         <div>
-                            <h4 class="text-xs font-semibold text-emerald-400 uppercase tracking-wider mb-2">Преимущества (Сильные стороны)</h4>
-                            <div id="reportV2PositiveList" class="space-y-1.5 text-sm"></div>
+                            <h4 class="text-xs font-medium text-emerald-400 mb-2">Преимущества (+)</h4>
+                            <div id="reportV2PositiveList" class="space-y-1.5 text-xs"></div>
                         </div>
-                        
                         <div>
-                            <h4 class="text-xs font-semibold text-rose-400 uppercase tracking-wider mb-2">Недостатки / Риски</h4>
-                            <div id="reportV2NegativeList" class="space-y-1.5 text-sm"></div>
+                            <h4 class="text-xs font-medium text-rose-400 mb-2">Недостатки (-)</h4>
+                            <div id="reportV2NegativeList" class="space-y-1.5 text-xs"></div>
                         </div>
                     </div>
                 </div>
@@ -257,88 +259,65 @@
         </div>
     </main>
 
-    <div id="smartInsertModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-[#121212] border border-zinc-800 w-full max-w-lg rounded-xl shadow-2xl p-6 relative">
-            <h3 class="text-base font-bold text-white mb-2">⚡ Умное пакетное распределение</h3>
+    <!-- ПОПАП: УМНЫЙ ВВОД (Оригинальный дизайн + новый текст по Пункту 1) -->
+    <div id="smartInsertModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#161820] border border-zinc-800 w-full max-w-md rounded-xl p-5 relative shadow-2xl">
+            <h3 class="text-sm font-bold text-white mb-2">Пакетный ввод критериев</h3>
             
-            <p class="text-xs text-zinc-400 mb-4 bg-black/40 border border-zinc-800/80 p-2.5 rounded-lg leading-relaxed">
+            <!-- Понятный лаконичный текст подсказки (Пункт 1) -->
+            <p class="text-xs text-zinc-400 mb-4 leading-relaxed bg-black/20 p-2 rounded border border-zinc-800/50">
                 Вставьте список критериев, где каждая новая строка — это один критерий. 
-                <strong class="text-amber-200/90 font-medium">Баллы указывать НЕ нужно</strong> — система автоматически распределит веса сверху вниз по мере убывания важности.
+                Баллы указывать НЕ нужно (система распределит их автоматически).
             </p>
             
             <input type="hidden" id="smartInsertTarget" value="">
             
             <div class="mb-4">
-                <label class="block text-xs text-zinc-400 mb-1 font-medium">Тип добавляемых критериев:</label>
-                <div class="grid grid-cols-2 gap-2 bg-black/50 p-1 rounded-lg border border-zinc-800">
-                    <button id="smartTypePos" onclick="setSmartType('pos')" class="py-1.5 text-xs rounded font-medium bg-zinc-800 text-emerald-400">Преимущества (+)</button>
-                    <button id="smartTypeNeg" onclick="setSmartType('neg')" class="py-1.5 text-xs rounded font-medium text-zinc-400 hover:text-rose-400">Недостатки (-)</button>
+                <div class="grid grid-cols-2 gap-1 bg-black/40 p-1 rounded-lg border border-zinc-800 text-xs">
+                    <button id="smartTypePos" onclick="setSmartType('pos')" class="py-1 rounded bg-zinc-800 text-emerald-400 font-medium">Преимущества (+)</button>
+                    <button id="smartTypeNeg" onclick="setSmartType('neg')" class="py-1 rounded text-zinc-400 hover:text-rose-400 font-medium">Недостатки (-)</button>
                 </div>
             </div>
 
-            <textarea id="smartInsertArea" rows="6" placeholder="Критерий 1&#10;Критерий 2&#10;Критерий 3" class="w-full bg-black/60 border border-zinc-800 rounded-lg p-3 text-sm text-white focus:outline-none focus:border-zinc-600 font-mono placeholder-zinc-700"></textarea>
+            <textarea id="smartInsertArea" rows="5" placeholder="Критерий 1&#10;Критерий 2" class="w-full bg-black/40 border border-zinc-800 rounded-lg p-2.5 text-xs text-white focus:outline-none focus:border-zinc-700 font-mono"></textarea>
             
-            <div class="flex justify-end gap-3 mt-4">
-                <button onclick="closeSmartInsert()" class="px-4 py-2 bg-zinc-900 text-xs text-zinc-400 hover:text-white rounded-lg border border-zinc-800 transition">Отмена</button>
-                <button onclick="applySmartInsert()" class="px-4 py-2 bg-gradient-to-r from-[#5F2B26] to-[#A36A5E] text-[#FFF5E2] font-semibold text-xs rounded-lg shadow transition">Импортировать</button>
+            <div class="flex justify-end gap-2 mt-4 text-xs">
+                <button onclick="closeSmartInsert()" class="px-3 py-1.5 bg-zinc-800 text-zinc-400 hover:text-white rounded transition">Отмена</button>
+                <button onclick="applySmartInsert()" class="px-4 py-1.5 bg-blue-600 text-white font-medium rounded shadow transition">Импортировать</button>
             </div>
         </div>
     </div>
 
-    <div id="helpModal" class="hidden fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center p-4">
-        <div class="bg-[#121212] border border-zinc-800 w-full max-w-xl rounded-xl shadow-2xl p-6 relative max-h-[90vh] overflow-y-auto custom-scrollbar">
-            <button onclick="closeHelpModal()" class="absolute top-4 right-4 text-zinc-500 hover:text-white text-lg font-bold">&times;</button>
+    <!-- ПОПАП: ИНСТРУКЦИЯ (Оригинальный дизайн - Пункт 7) -->
+    <div id="helpModal" class="hidden fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4">
+        <div class="bg-[#161820] border border-zinc-800 w-full max-w-md rounded-xl p-5 relative shadow-2xl">
+            <button onclick="closeHelpModal()" class="absolute top-3 right-3 text-zinc-500 hover:text-white font-bold">&times;</button>
             
-            <div class="flex items-center gap-2 mb-4 border-b border-zinc-800 pb-3">
-                <img src="favicon.png" class="w-6 h-6 object-contain">
-                <h3 class="text-base font-bold text-white uppercase tracking-wider">Инструкция пользователя</h3>
-            </div>
-
-            <div class="space-y-4 text-sm text-zinc-300 leading-relaxed">
+            <h3 class="text-sm font-bold text-white mb-3 uppercase tracking-wider">Как пользоваться анализатором</h3>
+            <div class="space-y-4 text-xs text-zinc-400 leading-relaxed">
                 <div>
-                    <h4 class="font-bold text-amber-200 mb-1">Что это за программа?</h4>
-                    <p class="text-xs">Это инструмент аналитического взвешивания для сравнения премиальных автомобилей, предложений или коммерческих вариантов. Она убирает хаос и наглядно показывает математически сильный вариант.</p>
+                    <h4 class="font-semibold text-zinc-200 mb-1">1. Настройка параметров</h4>
+                    <p>Выберите режим («Сравнение» или «Один вариант») и укажите стратегию. Кнопки «Аргументировать стоимость» и «Аргументировать скидку» адаптируют итоговую оценку с учетом цен вариантов.</p>
                 </div>
-
-                <hr class="border-zinc-800">
-
                 <div>
-                    <h4 class="font-bold text-white mb-1.5">Как ей пользоваться за 3 шага:</h4>
-                    <ul class="list-decimal list-inside space-y-2 text-xs">
-                        <li>
-                            <strong class="text-zinc-200">Выберите режим работы:</strong> 
-                            <br><span class="text-zinc-400 ml-4">«Сравнение» (для двух авто) или «Один вариант» (для глубокого разбора одной позиции).</span>
-                        </li>
-                        <li>
-                            <strong class="text-zinc-200">Добавьте плюсы (+) и минусы (-):</strong>
-                            <br><span class="text-zinc-400 ml-4">Задайте им значимость от 1 до 10. Чем важнее критерий, тем выше балл. Либо воспользуйтесь кнопкой <span class="text-amber-200">⚡ Умное распределение</span>, чтобы просто вставить готовый список без лишней ручной работы.</span>
-                        </li>
-                        <li>
-                            <strong class="text-zinc-200">Получите аргументы:</strong>
-                            <br><span class="text-zinc-400 ml-4">Нажмите <span class="text-zinc-200">«Сформировать отчет»</span>. Программа мгновенно объединит аргументы одинаковой силы и выдаст готовый структурированный вердикт для защиты сделки.</span>
-                        </li>
-                    </ul>
+                    <h4 class="font-semibold text-zinc-200 mb-1">2. Заполнение критериев</h4>
+                    <p>Добавляйте строки вручную или кликните «⚡ Умный ввод», чтобы скопировать готовый текстовый список. При умном вводе система сама расставит веса по убыванию значимости сверху вниз.</p>
                 </div>
-
-                <hr class="border-zinc-800">
-
                 <div>
-                    <h4 class="font-bold text-white mb-1">Особые целевые стратегии:</h4>
-                    <p class="text-xs text-zinc-400">
-                        Переключайте стратегии сверху, чтобы мгновенно адаптировать логику презентации под задачи диалога: <strong class="text-zinc-300">«Аргументировать стоимость»</strong> или <strong class="text-zinc-300">«Аргументировать скидку»</strong>.
-                    </p>
+                    <h4 class="font-semibold text-zinc-200 mb-1">3. Получение результата</h4>
+                    <p>Нажмите «Сформировать отчет». Списки автоматически свернутся, а программа сгруппирует все аргументы равной силы влияния и покажет итоговый математический баланс сил.</p>
                 </div>
             </div>
-
-            <div class="mt-6 pt-3 border-t border-zinc-800 text-right">
-                <button onclick="closeHelpModal()" class="px-5 py-2 bg-zinc-800 hover:bg-zinc-700 text-[#FFF5E2] font-semibold text-xs rounded-lg transition">
-                    Понятно!
+            <div class="mt-5 text-right">
+                <button onclick="closeHelpModal()" class="px-4 py-1.5 bg-zinc-800 text-zinc-200 text-xs rounded hover:bg-zinc-700 transition">
+                    Закрыть
                 </button>
             </div>
         </div>
     </div>
 
 
+    <!-- ЛОГИКА ПРИЛОЖЕНИЯ -->
     <script>
         let currentMode = 'compare'; 
         let selectedMethod = 'scale'; 
@@ -346,58 +325,53 @@
         let activeSmartType = 'pos'; 
         let globalMaxWeight = 10;
 
-        // Инициализация строк при загрузке
+        // Генерация строк
         function addCriteriaRow(variant, name = '', type = 'pos', weight = 5) {
             const list = document.getElementById(`${variant}CriteriaList`);
             const rowId = 'row_' + Math.random().toString(36).substr(2, 9);
             
             const div = document.createElement('div');
-            div.className = "flex items-center gap-2 p-2 bg-black/40 rounded-lg border border-zinc-900 hover:border-zinc-800 transition group";
+            div.className = "flex items-center gap-2 p-1.5 bg-black/20 rounded border border-zinc-800/60 group";
             div.id = rowId;
 
             const isRank = (selectedMethod === 'rank');
             const selectDisabled = isRank ? 'disabled' : '';
-            const selectClass = isRank ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-black/80 border-zinc-800 text-white focus:border-zinc-600';
+            const selectClass = isRank ? 'bg-zinc-900 border-zinc-800 text-zinc-500' : 'bg-black/40 border-zinc-800 text-white';
 
-            // Наполнение строки
             div.innerHTML = `
-                <select onchange="saveToStorage()" class="criterion-type text-xs rounded px-1.5 py-1.5 font-bold focus:outline-none transition ${type==='pos'?'bg-emerald-950/80 text-emerald-400 border border-emerald-900':'bg-rose-950/80 text-rose-400 border border-rose-900'}">
+                <select onchange="saveToStorage()" class="criterion-type text-xs rounded px-1 py-1 font-bold focus:outline-none bg-black/40 border border-zinc-800 ${type==='pos'?'text-emerald-400':'text-rose-400'}">
                     <option value="pos" ${type==='pos'?'selected':''}>+</option>
                     <option value="neg" ${type==='neg'?'selected':''}>-</option>
                 </select>
-                <input type="text" value="${name}" placeholder="Критерий оценки" oninput="saveToStorage()" class="criterion-name w-full bg-transparent text-sm text-zinc-200 placeholder-zinc-700 focus:outline-none">
+                <input type="text" value="${name}" placeholder="Критерий" oninput="saveToStorage()" class="criterion-name w-full bg-transparent text-xs text-zinc-200 focus:outline-none">
                 <div class="flex items-center gap-1">
-                    <select onchange="saveToStorage()" ${selectDisabled} class="criterion-weight text-xs rounded px-1 py-1.5 focus:outline-none transition ${selectClass}">
+                    <select onchange="saveToStorage()" ${selectDisabled} class="criterion-weight text-xs rounded p-0.5 focus:outline-none ${selectClass}">
                         ${Array.from({length: globalMaxWeight}, (_, i) => `<option value="${i+1}" ${weight == (i+1)?'selected':''}>${i+1}</option>`).join('')}
                     </select>
-                    <button onclick="document.getElementById('${rowId}').remove(); saveToStorage();" class="text-zinc-600 hover:text-rose-400 p-1 rounded opacity-60 group-hover:opacity-100 transition">&times;</button>
+                    <button onclick="document.getElementById('${rowId}').remove(); saveToStorage();" class="text-zinc-600 hover:text-rose-400 px-1 text-sm opacity-40 group-hover:opacity-100">&times;</button>
                 </div>
             `;
 
-            // Навешивание события смены цвета знака +/-
             const typeSelect = div.querySelector('.criterion-type');
             typeSelect.addEventListener('change', function() {
-                if(this.value === 'pos') {
-                    this.className = "criterion-type text-xs bg-emerald-950/80 text-emerald-400 border border-emerald-900 rounded px-1.5 py-1.5 font-bold focus:outline-none transition";
-                } else {
-                    this.className = "criterion-type text-xs bg-rose-950/80 text-rose-400 border border-rose-900 rounded px-1.5 py-1.5 font-bold focus:outline-none transition";
-                }
+                if(this.value === 'pos') { this.className = "criterion-type text-xs rounded px-1 py-1 font-bold focus:outline-none bg-black/40 border border-zinc-800 text-emerald-400"; }
+                else { this.className = "criterion-type text-xs rounded px-1 py-1 font-bold focus:outline-none bg-black/40 border border-zinc-800 text-rose-400"; }
             });
 
             list.appendChild(div);
             saveToStorage();
         }
 
-        // Переключения режимов
+        // Управление конфигурациями
         function setMode(mode) {
             currentMode = mode;
             const isCompare = mode === 'compare';
             
-            document.getElementById('modeCompare').className = isCompare ? "py-2 text-sm rounded-md font-medium transition-all text-white bg-zinc-800 shadow" : "py-2 text-sm rounded-md font-medium transition-all text-zinc-400 hover:text-white";
-            document.getElementById('modeSingle').className = !isCompare ? "py-2 text-sm rounded-md font-medium transition-all text-white bg-zinc-800 shadow" : "py-2 text-sm rounded-md font-medium transition-all text-zinc-400 hover:text-white";
+            document.getElementById('modeCompare').className = isCompare ? "py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800 shadow" : "py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white";
+            document.getElementById('modeSingle').className = !isCompare ? "py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800 shadow" : "py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white";
             
             if(isCompare) {
-                document.getElementById('v2Wrapper').style.display = 'block';
+                document.getElementById('v2Wrapper').style.display = 'flex';
                 document.getElementById('reportV2Column').style.display = 'block';
                 document.getElementById('statusBarCard').style.display = 'block';
                 document.getElementById('reportTablesGrid').className = "grid grid-cols-1 md:grid-cols-2 gap-6";
@@ -423,8 +397,8 @@
         function setCalculationMethod(method) {
             selectedMethod = method;
             const isScale = method === 'scale';
-            document.getElementById('methodScale').className = isScale ? "py-2 text-sm rounded-md font-medium transition text-white bg-zinc-800 shadow" : "py-2 text-sm rounded-md font-medium transition text-zinc-400 hover:text-white";
-            document.getElementById('methodRank').className = !isScale ? "py-2 text-sm rounded-md font-medium transition text-white bg-zinc-800 shadow" : "py-2 text-sm rounded-md font-medium transition text-zinc-400 hover:text-white";
+            document.getElementById('methodScale').className = isScale ? "py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800 shadow" : "py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white";
+            document.getElementById('methodRank').className = !isScale ? "py-1.5 text-xs rounded font-medium transition text-white bg-zinc-800 shadow" : "py-1.5 text-xs rounded font-medium transition text-zinc-400 hover:text-white";
             
             updateGlobalMaxWeight();
             saveToStorage();
@@ -450,11 +424,11 @@
                 
                 if (selectedMethod === 'rank') {
                     select.disabled = true;
-                    select.className = "criterion-weight text-xs rounded px-1 py-1.5 bg-zinc-900 border border-zinc-800 text-zinc-400 focus:outline-none transition";
+                    select.className = "criterion-weight text-xs rounded p-0.5 bg-zinc-900 text-zinc-400 focus:outline-none";
                     select.innerHTML = `<option value="${total - i}">${total - i}</option>`;
                 } else {
                     select.disabled = false;
-                    select.className = "criterion-weight text-xs rounded px-1 py-1.5 bg-black/80 border border-zinc-800 text-white focus:outline-none transition focus:border-zinc-600";
+                    select.className = "criterion-weight text-xs rounded p-0.5 bg-black/40 text-white focus:outline-none";
                     let opts = '';
                     for(let w=1; w<=10; w++) {
                         opts += `<option value="${w}" ${w === Math.min(prevVal, 10)?'selected':''}>${w}</option>`;
@@ -464,24 +438,22 @@
             }
         }
 
-        // Попап Умного распределения
+        // Функции пакетного ввода
         function openSmartInsert(variant) {
             document.getElementById('smartInsertTarget').value = variant;
             document.getElementById('smartInsertArea').value = '';
             setSmartType('pos');
             document.getElementById('smartInsertModal').classList.remove('hidden');
         }
-        function closeSmartInsert() {
-            document.getElementById('smartInsertModal').classList.add('hidden');
-        }
+        function closeSmartInsert() { document.getElementById('smartInsertModal').classList.add('hidden'); }
         function setSmartType(type) {
             activeSmartType = type;
             if(type === 'pos') {
-                document.getElementById('smartTypePos').className = "py-1.5 text-xs rounded font-medium bg-zinc-800 text-emerald-400";
-                document.getElementById('smartTypeNeg').className = "py-1.5 text-xs rounded font-medium text-zinc-400 hover:text-rose-400";
+                document.getElementById('smartTypePos').className = "py-1 rounded bg-zinc-800 text-emerald-400 font-medium";
+                document.getElementById('smartTypeNeg').className = "py-1 rounded text-zinc-400 hover:text-rose-400 font-medium";
             } else {
-                document.getElementById('smartTypePos').className = "py-1.5 text-xs rounded font-medium text-zinc-400 hover:text-emerald-400";
-                document.getElementById('smartTypeNeg').className = "py-1.5 text-xs rounded font-medium bg-zinc-800 text-rose-400";
+                document.getElementById('smartTypePos').className = "py-1 rounded text-zinc-400 hover:text-emerald-400 font-medium";
+                document.getElementById('smartTypeNeg').className = "py-1 rounded bg-zinc-800 text-rose-400 font-medium";
             }
         }
         function applySmartInsert() {
@@ -509,11 +481,11 @@
             saveToStorage();
         }
 
-        // Инструкция
+        // Попап инструкции
         function openHelpModal() { document.getElementById('helpModal').classList.remove('hidden'); }
         function closeHelpModal() { document.getElementById('helpModal').classList.add('hidden'); }
 
-        // СБОР ДАННЫХ ИЗ ИНТЕРФЕЙСА
+        // ОБРАБОТКА ДАННЫХ И СФОРМИРОВАНИЕ ОТЧЕТА
         function getVariantData(variant) {
             const list = document.getElementById(`${variant}CriteriaList`);
             const criteria = [];
@@ -525,23 +497,20 @@
                 criteria.push({ name, type, weight });
             }
             return {
-                name: document.getElementById(`${variant}Name`).value.trim() || (variant === 'v1' ? 'Вариант А' : 'Вариант Б'),
+                name: document.getElementById(`${variant}Name`).value.trim() || (variant === 'v1' ? 'Вариант 1' : 'Вариант 2'),
                 price: parseFloat(document.getElementById(`${variant}Price`).value) || 0,
                 criteria: criteria
             };
         }
 
-        // РАСЧЕТ И АВТОМАТИЧЕСКОЕ СВОРАЧИВАНИЕ (Пункт 3, 5, 6)
         function calculateResults() {
-            // ПУНКТ 3: Автоматическое сворачивание списков во всех адаптивах в аккордеон
+            // ПУНКТ 4: Авто-сворачивание списков при формировании отчета
             document.getElementById('v1CriteriaContainer').style.maxHeight = '0px';
             document.getElementById('v2CriteriaContainer').style.maxHeight = '0px';
 
             const v1 = getVariantData('v1');
             const v2 = getVariantData('v2');
 
-            // Подсчет сумм весов
-            const sumWeights = data => data.criteria.reduce((acc, c) => acc + c.weight, 0);
             const posSum = data => data.criteria.filter(c => c.type === 'pos').reduce((acc, c) => acc + c.weight, 0);
             const negSum = data => data.criteria.filter(c => c.type === 'neg').reduce((acc, c) => acc + c.weight, 0);
 
@@ -551,7 +520,6 @@
             let scoreV1 = v1Pos - v1Neg;
             let scoreV2 = v2Pos - v2Neg;
 
-            // Корректировка цен по стратегиям
             if (selectedStrategy === 'price' && v1.price && v2.price && currentMode === 'compare') {
                 const maxP = Math.max(v1.price, v2.price);
                 if (v1.price > v2.price) scoreV1 -= ((v1.price - v2.price) / maxP) * 10;
@@ -562,7 +530,6 @@
                 else scoreV2 += ((v1.price - v2.price) / maxP) * 15;
             }
 
-            // Отрисовка Баланса сил (Статус-бары)
             if (currentMode === 'compare') {
                 document.getElementById('statusV1PositiveLabel').innerText = `${v1.name} (+${v1Pos})`;
                 document.getElementById('statusV2PositiveLabel').innerText = `(+${v2Pos}) ${v2.name}`;
@@ -576,20 +543,19 @@
                 document.getElementById('barV1Negative').style.width = `${(v1Neg / totalNeg) * 100}%`;
                 document.getElementById('barV2Negative').style.width = `${(v2Neg / totalNeg) * 100}%`;
 
-                // Итоговый текстовый бейдж
                 const diff = (scoreV1 - scoreV2).toFixed(1);
                 if (diff > 0) {
-                    document.getElementById('finalScoreBadge').innerHTML = `Лидирует <span class="text-emerald-400 font-bold ml-1">${v1.name} (▲ ${diff})</span>`;
+                    document.getElementById('finalScoreBadge').innerHTML = `Лидирует: <span class="text-emerald-400 font-bold">${v1.name} (+${diff})</span>`;
                 } else if (diff < 0) {
-                    document.getElementById('finalScoreBadge').innerHTML = `Лидирует <span class="text-emerald-400 font-bold ml-1">${v2.name} (▲ ${Math.abs(diff)})</span>`;
+                    document.getElementById('finalScoreBadge').innerHTML = `Лидирует: <span class="text-emerald-400 font-bold">${v2.name} (+${Math.abs(diff)})</span>`;
                 } else {
-                    document.getElementById('finalScoreBadge').innerText = `Абсолютный паритет вариантов`;
+                    document.getElementById('finalScoreBadge').innerText = `Баланс равен`;
                 }
             } else {
-                document.getElementById('finalScoreBadge').innerHTML = `Итог оценки: <span class="text-amber-200 font-bold ml-1">${scoreV1.toFixed(1)} баллов</span>`;
+                document.getElementById('finalScoreBadge').innerHTML = `Итог: <span class="text-blue-400 font-bold">${scoreV1.toFixed(1)}</span>`;
             }
 
-            // Рендеринг структурированных списков (Пункт 5 - Группировка одинаковых баллов)
+            // ПУНКТ 5: Рендеринг финального отчета со сгруппированными одинаковыми баллами
             renderGroupedReport(v1, 'v1', 'reportV1PositiveList', 'reportV1NegativeList');
             if (currentMode === 'compare') {
                 renderGroupedReport(v2, 'v2', 'reportV2PositiveList', 'reportV2NegativeList');
@@ -599,7 +565,7 @@
             document.getElementById('resultsSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // ФУНКЦИЯ ГРУППИРОВКИ И ОТРИСОВКИ СТРОК С ОДИНАКОВЫМ БАЛЛОМ (Пункт 5)
+        // РЕНДЕР С ГРУППИРОВКОЙ ОДИНАКОВЫХ ВЕСОВ (Пункт 5)
         function renderGroupedReport(variantData, vPrefix, posContainerId, negContainerId) {
             document.getElementById(`reportTitle${vPrefix.toUpperCase()}`).innerText = variantData.name + (variantData.price ? ` (${variantData.price.toLocaleString()} ₽)` : '');
 
@@ -611,7 +577,6 @@
             const positives = variantData.criteria.filter(c => c.type === 'pos');
             const negatives = variantData.criteria.filter(c => c.type === 'neg');
 
-            // Хелпер группировки
             const groupData = (items) => {
                 const map = {};
                 items.forEach(item => {
@@ -627,47 +592,41 @@
             const groupedPos = groupData(positives);
             const groupedNeg = groupData(negatives);
 
-            // Рендер преимуществ
+            // Отрисовка преимуществ с суммами
             if(groupedPos.length === 0) {
-                posList.innerHTML = `<div class="text-xs text-zinc-600 italic">Аргументы отсутствуют</div>`;
+                posList.innerHTML = `<div class="text-zinc-600 italic">Нет аргументов</div>`;
             } else {
                 groupedPos.forEach(group => {
                     const count = group.names.length;
-                    const totalWeight = group.weight * count;
-                    const badgeText = `по ${group.weight}+ (Σ${totalWeight}+)`;
+                    const badgeText = `по ${group.weight}+ (Σ${group.weight * count}+)`;
                     
                     const div = document.createElement('div');
-                    div.className = "p-2 bg-emerald-950/20 border border-emerald-900/30 rounded-lg flex flex-col gap-1";
+                    div.className = "p-2 bg-black/20 border border-zinc-800/60 rounded flex justify-between items-start gap-4";
                     div.innerHTML = `
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex flex-col gap-1 text-zinc-300">
-                                ${group.names.map(n => `<span class="before:content-['•'] before:mr-2 before:text-emerald-500">${n}</span>`).join('')}
-                            </div>
-                            <span class="text-[11px] font-bold text-emerald-400 whitespace-nowrap bg-emerald-950/80 px-2 py-0.5 rounded border border-emerald-800/60">${badgeText}</span>
+                        <div class="flex flex-col gap-0.5 text-zinc-300">
+                            ${group.names.map(n => `<span>• ${n}</span>`).join('')}
                         </div>
+                        <span class="text-[10px] font-bold text-emerald-400 whitespace-nowrap bg-emerald-950/40 px-1.5 py-0.5 rounded border border-emerald-900/40">${badgeText}</span>
                     `;
                     posList.appendChild(div);
                 });
             }
 
-            // Рендер недостатков
+            // Отрисовка недостатков с суммами
             if(groupedNeg.length === 0) {
-                negList.innerHTML = `<div class="text-xs text-zinc-600 italic">Минусы или риски не обнаружены</div>`;
+                negList.innerHTML = `<div class="text-zinc-600 italic">Нет аргументов</div>`;
             } else {
                 groupedNeg.forEach(group => {
                     const count = group.names.length;
-                    const totalWeight = group.weight * count;
-                    const badgeText = `по ${group.weight}- (Σ${totalWeight}-)`;
+                    const badgeText = `по ${group.weight}- (Σ${group.weight * count}-)`;
 
                     const div = document.createElement('div');
-                    div.className = "p-2 bg-rose-950/10 border border-rose-900/30 rounded-lg flex flex-col gap-1";
+                    div.className = "p-2 bg-black/20 border border-zinc-800/60 rounded flex justify-between items-start gap-4";
                     div.innerHTML = `
-                        <div class="flex justify-between items-start gap-4">
-                            <div class="flex flex-col gap-1 text-zinc-300">
-                                ${group.names.map(n => `<span class="before:content-['•'] before:mr-2 before:text-rose-500">${n}</span>`).join('')}
-                            </div>
-                            <span class="text-[11px] font-bold text-rose-400 whitespace-nowrap bg-rose-950/80 px-2 py-0.5 rounded border border-rose-800/60">${badgeText}</span>
+                        <div class="flex flex-col gap-0.5 text-zinc-300">
+                            ${group.names.map(n => `<span>• ${n}</span>`).join('')}
                         </div>
+                        <span class="text-[10px] font-bold text-rose-400 whitespace-nowrap bg-rose-950/40 px-1.5 py-0.5 rounded border border-rose-900/40">${badgeText}</span>
                     `;
                     negList.appendChild(div);
                 });
@@ -685,12 +644,12 @@
                 v1Data: getVariantData('v1').criteria,
                 v2Data: getVariantData('v2').criteria
             };
-            localStorage.setItem('analyzer_v2_data', JSON.stringify(data));
+            localStorage.setItem('analyzer_original_style_data', JSON.stringify(data));
         }
 
         function loadFromStorage() {
             try {
-                const json = localStorage.getItem('analyzer_v2_data');
+                const json = localStorage.getItem('analyzer_original_style_data');
                 if(!json) return false;
                 const data = JSON.parse(json);
                 
@@ -716,24 +675,21 @@
                 setCalculationMethod(selectedMethod);
                 setStrategyMode(selectedStrategy);
                 return true;
-            } catch(e) {
-                return false;
-            }
+            } catch(e) { return false; }
         }
 
         function resetAll(clearStorage = false) {
             document.getElementById('v1CriteriaList').innerHTML = '';
             document.getElementById('v2CriteriaList').innerHTML = '';
-            document.getElementById('resultsSection').style.display = 'none';
+            document.getElementById('resultsSection').classList.add('hidden');
             
-            // Восстановление раскрытого состояния аккордеонов
             document.getElementById('v1CriteriaContainer').style.maxHeight = 'none';
             document.getElementById('v2CriteriaContainer').style.maxHeight = 'none';
 
             if(clearStorage) {
-                localStorage.removeItem('analyzer_v2_data');
-                document.getElementById('v1Name').value = 'Вариант А';
-                document.getElementById('v2Name').value = 'Вариант Б';
+                localStorage.removeItem('analyzer_original_style_data');
+                document.getElementById('v1Name').value = 'Вариант 1';
+                document.getElementById('v2Name').value = 'Вариант 2';
                 document.getElementById('v1Price').value = '';
                 document.getElementById('v2Price').value = '';
             }
@@ -743,31 +699,29 @@
             updateGlobalMaxWeight();
         }
 
-        // Эффект падающего снега из версии 1.8
+        // Эффект падающего снега
         function createSnow() {
             const snow = document.getElementById('snow');
-            const count = 40;
+            const count = 30;
             for(let i=0; i<count; i++) {
                 const el = document.createElement('div');
                 el.className = 'snowflake';
                 el.style.left = Math.random() * 100 + 'vw';
                 el.style.top = Math.random() * -10 + 'vh';
-                const size = Math.random() * 3 + 1;
+                const size = Math.random() * 2 + 1;
                 el.style.width = size + 'px';
                 el.style.height = size + 'px';
-                el.style.animationDuration = Math.random() * 5 + 5 + 's';
-                el.style.animationDelay = Math.random() * 5 + 's';
+                el.style.animationDuration = Math.random() * 4 + 6 + 's';
+                el.style.animationDelay = Math.random() * 4 + 's';
                 snow.appendChild(el);
             }
         }
 
         window.onload = function() {
             createSnow();
-            if(!loadFromStorage()) {
-                resetAll(false);
-            }
+            if(!loadFromStorage()) { resetAll(false); }
             
-            // Поддержка реактивного открытия аккордеона при ручном редактировании
+            // Поддержка раскрытия аккордеона при фокусе на название
             document.getElementById('v1Name').addEventListener('focus', () => document.getElementById('v1CriteriaContainer').style.maxHeight = 'none');
             document.getElementById('v2Name').addEventListener('focus', () => document.getElementById('v2CriteriaContainer').style.maxHeight = 'none');
         };
